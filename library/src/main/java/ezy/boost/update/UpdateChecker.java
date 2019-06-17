@@ -16,6 +16,8 @@
 
 package ezy.boost.update;
 
+import android.content.Context;
+
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -23,8 +25,9 @@ import java.net.URL;
 public class UpdateChecker implements IUpdateChecker {
 
     final byte[] mPostData;
-
-    public UpdateChecker() {
+    private Context context;
+    public UpdateChecker(Context context) {
+        this.context = context;
         mPostData = null;
     }
     public UpdateChecker(byte[] data) {
@@ -54,11 +57,11 @@ public class UpdateChecker implements IUpdateChecker {
             if (connection.getResponseCode() == HttpURLConnection.HTTP_OK) {
                 agent.setInfo(UpdateUtil.readString(connection.getInputStream()));
             } else {
-                agent.setError(new UpdateError(UpdateError.CHECK_HTTP_STATUS, "" + connection.getResponseCode()));
+                agent.setError(new UpdateError(context, UpdateError.CHECK_HTTP_STATUS));
             }
         } catch (IOException e) {
             e.printStackTrace();
-            agent.setError(new UpdateError(UpdateError.CHECK_NETWORK_IO));
+            agent.setError(new UpdateError(context, UpdateError.CHECK_NETWORK_IO));
         } finally {
             if (connection != null) {
                 connection.disconnect();

@@ -22,6 +22,7 @@ import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.NotificationCompat;
@@ -115,7 +116,7 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
             mInfo = mParser.parse(source);
         } catch (Exception e) {
             e.printStackTrace();
-            setError(new UpdateError(UpdateError.CHECK_PARSE));
+            setError(new UpdateError(mContext, UpdateError.CHECK_PARSE));
         }
     }
 
@@ -182,13 +183,13 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
             if (UpdateUtil.checkWifi(mContext)) {
                 doCheck();
             } else {
-                doFailure(new UpdateError(UpdateError.CHECK_NO_WIFI));
+                doFailure(new UpdateError(mContext, UpdateError.CHECK_NO_WIFI));
             }
         } else {
             if (UpdateUtil.checkNetwork(mContext)) {
                 doCheck();
             } else {
-                doFailure(new UpdateError(UpdateError.CHECK_NO_NETWORK));
+                doFailure(new UpdateError(mContext, UpdateError.CHECK_NO_NETWORK));
             }
         }
     }
@@ -199,9 +200,7 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
         new AsyncTask<String, Void, Void>() {
             @Override
             protected Void doInBackground(String... params) {
-                if (mChecker == null) {
-                    mChecker = new UpdateChecker();
-                }
+                mChecker = new UpdateChecker(mContext);
                 mChecker.check(UpdateAgent.this, mUrl);
                 return null;
             }
@@ -220,13 +219,22 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
             doFailure(error);
         } else {
             UpdateInfo info = getInfo();
+            int versionCode = 0;
+            try {
+                versionCode = mContext.getPackageManager().getPackageInfo(
+                        mContext.getPackageName(), 0).versionCode;
+                if(info.versionCode <= versionCode)
+                    info.hasUpdate = false;
+            } catch (PackageManager.NameNotFoundException e) {
+                e.printStackTrace();
+            }
             if (info == null) {
-                doFailure(new UpdateError(UpdateError.CHECK_UNKNOWN));
+                doFailure(new UpdateError(mContext, UpdateError.CHECK_UNKNOWN));
             } else if (!info.hasUpdate) {
-                doFailure(new UpdateError(UpdateError.UPDATE_NO_NEWER));
+                doFailure(new UpdateError(mContext, UpdateError.UPDATE_NO_NEWER));
             } else if (UpdateUtil.isIgnore(mContext, info.md5)) {
-                doFailure(new UpdateError(UpdateError.UPDATE_IGNORED));
-            } else {
+                doFailure(new UpdateError(mContext, UpdateError.UPDATE_IGNORED));
+            } else{
                 UpdateUtil.log("update md5" + mInfo.md5);
                 UpdateUtil.ensureExternalCacheDir(mContext);
                 UpdateUtil.setUpdate(mContext, mInfo.md5);
@@ -258,7 +266,7 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
     }
 
     void doFailure(UpdateError error) {
-        if (mIsManual || error.isError()) {
+        if (mIsManual) {
             mOnFailureListener.onFailure(error);
         }
     }
@@ -302,10 +310,12 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
 
             final AlertDialog dialog = new AlertDialog.Builder(mContext).create();
 
-            dialog.setTitle("应用更新");
             dialog.setCancelable(false);
             dialog.setCanceledOnTouchOutside(false);
 
+            // 重写提示
+            dialog.setTitle(info.versionName);
+            dialog.setMessage(size);
 
             float density = mContext.getResources().getDisplayMetrics().density;
             TextView tv = new TextView(mContext);
@@ -313,23 +323,17 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
             tv.setVerticalScrollBarEnabled(true);
             tv.setTextSize(14);
             tv.setMaxHeight((int) (250 * density));
-
-            dialog.setView(tv, (int) (25 * density), (int) (15 * density), (int) (25 * density), 0);
-
+            dialog.setView(tv, (int) (25 * density), 0, (int) (25 * density), 0);
 
             DialogInterface.OnClickListener listener = new DefaultPromptClickListener(agent, true);
 
-            if (info.isForce) {
-                tv.setText("您需要更新应用才能继续使用\n\n" + content);
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "确定", listener);
-            } else {
-                tv.setText(content);
-                dialog.setButton(DialogInterface.BUTTON_POSITIVE, "立即更新", listener);
-                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, "以后再说", listener);
-                if (info.isIgnorable) {
-                    dialog.setButton(DialogInterface.BUTTON_NEUTRAL, "忽略该版", listener);
-                }
-            }
+            tv.setText(info.updateContent);
+            dialog.setButton(DialogInterface.BUTTON_POSITIVE, mContext.getString(R.string.update_now), listener);
+            if (!info.isForce)
+                dialog.setButton(DialogInterface.BUTTON_NEGATIVE, mContext.getString(R.string.update_later), listener);
+            if (info.isIgnorable)
+                dialog.setButton(DialogInterface.BUTTON_NEUTRAL, mContext.getString(R.string.update_ignore), listener);
+
             dialog.show();
         }
     }
@@ -362,7 +366,7 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
             if (mContext instanceof Activity && !((Activity) mContext).isFinishing()) {
                 ProgressDialog dialog = new ProgressDialog(mContext);
                 dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-                dialog.setMessage("下载中...");
+                dialog.setMessage(mContext.getString(R.string.update_downloading));
                 dialog.setIndeterminate(false);
                 dialog.setCancelable(false);
                 dialog.show();
@@ -399,7 +403,7 @@ class UpdateAgent implements ICheckAgent, IUpdateAgent, IDownloadAgent {
         @Override
         public void onStart() {
             if (mBuilder == null) {
-                String title = "下载中 - " + mContext.getString(mContext.getApplicationInfo().labelRes);
+                String title =  mContext.getString(R.string.update_now) + " " + mContext.getString(mContext.getApplicationInfo().labelRes);
                 mBuilder = new NotificationCompat.Builder(mContext);
                 mBuilder.setOngoing(true)
                         .setAutoCancel(false)

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_now">立即更新</string>
+    <string name="update_later">以后再说</string>
+    <string name="update_ignore">忽略该版</string>
+    <string name="update_downloading">下载中</string>
+
+    <string name="update_error_1001">该版本已经忽略</string>
+    <string name="update_error_1002">已经是最新版了</string>
+    <string name="update_error_2001">查询更新失败：未知错误</string>
+    <string name="update_error_2002">查询更新失败：没有WIFI</string>
+    <string name="update_error_2003">查询更新失败：没有网络</string>
+    <string name="update_error_2004">查询更新失败：网络异常</string>
+    <string name="update_error_2005">查询更新失败：错误的HTTP状态</string>
+    <string name="update_error_2006">查询更新失败：解析错误</string>
+    <string name="update_error_3001">下载失败：未知错误</string>
+    <string name="update_error_3002">下载失败：下载被取消</string>
+    <string name="update_error_3003">下载失败：磁盘空间不足</string>
+    <string name="update_error_3004">下载失败：磁盘读写错误</string>
+    <string name="update_error_3005">下载失败：网络异常</string>
+    <string name="update_error_3006">下载失败：网络中断</string>
+    <string name="update_error_3007">下载失败：网络超时</string>
+    <string name="update_error_3008">下载失败：错误的HTTP状态</string>
+    <string name="update_error_3009">下载失败：下载不完整</string>
+    <string name="update_error_3010">下载失败：校验错误</string>
+</resources>

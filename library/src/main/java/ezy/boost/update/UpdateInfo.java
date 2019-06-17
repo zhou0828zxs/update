@@ -43,6 +43,7 @@ public class UpdateInfo {
     public long size;
 
     public static UpdateInfo parse(String s) throws JSONException {
+//        UpdateUtil.log(s);
         JSONObject o = new JSONObject(s);
         return parse(o.has("data") ? o.getJSONObject("data") : o);
     }

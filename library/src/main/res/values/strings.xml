@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="update_now">Update now</string>
+    <string name="update_later">Update later</string>
+    <string name="update_ignore">Ignore version</string>
+    <string name="update_downloading">Downloading</string>
+
+    <string name="update_error_1001">This version has been ignored</string>
+    <string name="update_error_1002">Is already the latest version</string>
+    <string name="update_error_2001">Query update failed: unknown error</string>
+    <string name="update_error_2002">Query update failed: no WIFI</string>
+    <string name="update_error_2003">Query update failed: no network</string>
+    <string name="update_error_2004">Query update failed: network exception</string>
+    <string name="update_error_2005">Query update failed: wrong HTTP status</string>
+    <string name="update_error_2006">Query update failed: parsing error</string>
+
+    <string name="update_error_3001">Download failed: unknown error</string>
+    <string name="update_error_3002">Download failed: download was canceled</string>
+    <string name="update_error_3003">Download failed: insufficient disk space</string>
+    <string name="update_error_3004">Download failed: disk read and write error</string>
+    <string name="update_error_3005">Download failed: network exception</string>
+    <string name="update_error_3006">Download failed: network interruption</string>
+    <string name="update_error_3007">Download failed: network timeout</string>
+    <string name="update_error_3008">Download failed: wrong HTTP status</string>
+    <string name="update_error_3009">Download failed: download is incomplete</string>
+    <string name="update_error_3010">Download failed: checksum error</string>
+</resources>

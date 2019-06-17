@@ -77,20 +77,20 @@ class UpdateDownloader extends AsyncTask<Void, Integer, Long> {
         try {
             long result = download();
             if (isCancelled()) {
-                mAgent.setError(new UpdateError(UpdateError.DOWNLOAD_CANCELLED));
+                mAgent.setError(new UpdateError(mContext, UpdateError.DOWNLOAD_CANCELLED));
             } else if (result == -1) {
-                mAgent.setError(new UpdateError(UpdateError.DOWNLOAD_UNKNOWN));
+                mAgent.setError(new UpdateError(mContext, UpdateError.DOWNLOAD_UNKNOWN));
             } else if (!UpdateUtil.verify(mTemp, mTemp.getName())) {
-                mAgent.setError(new UpdateError(UpdateError.DOWNLOAD_VERIFY));
+                mAgent.setError(new UpdateError(mContext, UpdateError.DOWNLOAD_VERIFY));
             }
         } catch (UpdateError e) {
             mAgent.setError(e);
         } catch (FileNotFoundException e) {
             e.printStackTrace();
-            mAgent.setError(new UpdateError(UpdateError.DOWNLOAD_DISK_IO));
+            mAgent.setError(new UpdateError(mContext, UpdateError.DOWNLOAD_DISK_IO));
         } catch (IOException e) {
             e.printStackTrace();
-            mAgent.setError(new UpdateError(UpdateError.DOWNLOAD_NETWORK_IO));
+            mAgent.setError(new UpdateError(mContext, UpdateError.DOWNLOAD_NETWORK_IO));
         } finally {
             if (mConnection != null) {
                 mConnection.disconnect();
@@ -126,14 +126,14 @@ class UpdateDownloader extends AsyncTask<Void, Integer, Long> {
 
     void checkNetwork() throws UpdateError {
         if (!UpdateUtil.checkNetwork(mContext)) {
-            throw new UpdateError(UpdateError.DOWNLOAD_NETWORK_BLOCKED);
+            throw new UpdateError(mContext, UpdateError.DOWNLOAD_NETWORK_BLOCKED);
         }
     }
 
     void checkStatus() throws IOException, UpdateError {
         int statusCode = mConnection.getResponseCode();
         if (statusCode != 200 && statusCode != 206) {
-            throw new UpdateError(UpdateError.DOWNLOAD_HTTP_STATUS, "" + statusCode);
+            throw new UpdateError(mContext, UpdateError.DOWNLOAD_HTTP_STATUS);
         }
     }
 
@@ -141,7 +141,7 @@ class UpdateDownloader extends AsyncTask<Void, Integer, Long> {
         long storage = getAvailableStorage();
         UpdateUtil.log("need = " + (total - loaded) + " = " + total + " - " + loaded + "\nspace = " + storage);
         if (total - loaded > storage) {
-            throw new UpdateError(UpdateError.DOWNLOAD_DISK_NO_SPACE);
+            throw new UpdateError(mContext, UpdateError.DOWNLOAD_DISK_NO_SPACE);
         }
     }
 
@@ -186,7 +186,7 @@ class UpdateDownloader extends AsyncTask<Void, Integer, Long> {
         if (isCancelled()) {
         } else if ((mBytesTemp + bytesCopied) != mBytesTotal && mBytesTotal != -1) {
             UpdateUtil.log("download incomplete(" + mBytesTemp + " + " + bytesCopied + " != " + mBytesTotal + ")");
-            throw new UpdateError(UpdateError.DOWNLOAD_INCOMPLETE);
+            throw new UpdateError(mContext, UpdateError.DOWNLOAD_INCOMPLETE);
         }
 
         return bytesCopied;
@@ -219,7 +219,7 @@ class UpdateDownloader extends AsyncTask<Void, Integer, Long> {
                 } else if (previousBlockTime == -1) {
                     previousBlockTime = System.currentTimeMillis();
                 } else if ((System.currentTimeMillis() - previousBlockTime) > TIME_OUT) {
-                    throw new UpdateError(UpdateError.DOWNLOAD_NETWORK_TIMEOUT);
+                    throw new UpdateError(mContext, UpdateError.DOWNLOAD_NETWORK_TIMEOUT);
                 }
             }
             return bytes;

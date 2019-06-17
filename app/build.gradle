@@ -1,13 +1,13 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 25
-    buildToolsVersion "25.0.2"
+    compileSdkVersion 26
+    buildToolsVersion "28.0.3"
 
     defaultConfig {
         applicationId "ezy.demo.update"
         minSdkVersion 16
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
 
@@ -23,9 +23,9 @@ repositories {
     maven { url "https://jitpack.io" }
 }
 dependencies {
-    compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile project(':library')
-    compile 'com.android.support:appcompat-v7:25.+'
-    compile 'com.android.support:gridlayout-v7:25.+'
-    compile 'com.android.support:design:25.+'
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation project(':library')
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+//    implementation 'com.android.support:gridlayout-v7:26.+'
+//    implementation 'com.android.support:design:26.+'
 }
